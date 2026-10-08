@@ -1,0 +1,30 @@
+name: Package and verify
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: python scripts/build_release.py
+      - run: node --test tests/activity.test.mjs
+      - run: powershell -NoProfile -ExecutionPolicy Bypass -File tests/portable-installers.ps1
+      - uses: actions/upload-artifact@v4
+        with: {name: naiyou-release-packages, path: dist/}
+  unix-codex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify offline Codex shell scripts
+        shell: bash
+        run: |
+          set -eu
+          sandbox="$(mktemp -d)/Codex data"
+          sh codex/install.sh "$sandbox"
+          python3 -c 'import json,sys; from pathlib import Path; p=Path(sys.argv[1])/"pets/naiyou-community/pet.json"; assert json.loads(p.read_text())["spriteVersionNumber"]==2' "$sandbox"
+          sh codex/install.sh "$sandbox"
+          sh codex/uninstall.sh "$sandbox"
+          test ! -e "$sandbox/pets/naiyou-community/pet.json"

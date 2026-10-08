@@ -1,0 +1,3 @@
+- insert:
+    - id: naiyou-pet
+      name: '@local/dsh-naiyou-pet'

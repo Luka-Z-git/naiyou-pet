@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>把奶邮装进 Codex</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf5f8;color:#184453;font:16px/1.65 system-ui,sans-serif}main{max-width:660px;margin:5vh auto;padding:32px;background:#fff;border:1px solid #d0e4eb;border-radius:24px}h1{font-size:26px}label{display:block;margin-top:18px}input,textarea{font:inherit;width:100%;padding:10px;border:1px solid #a8c7d2;border-radius:9px}textarea{font-size:12px;margin:14px 0;min-height:100px}button,a.button{display:inline-block;border:0;background:#246c8b;color:#fff;padding:9px 18px;border-radius:10px;font:inherit;text-decoration:none;cursor:pointer}a[aria-disabled=true]{pointer-events:none;opacity:.45}.pet{width:96px;height:104px;background:url('pet/spritesheet.png') 0 0/768px 1144px}small{color:#59747e}.message{color:#9a4718;min-height:1.6em}footer{margin-top:26px;font-size:13px}
+</style><main>
+<div class="pet" aria-label="奶邮"></div><h1>把奶邮装进 Codex</h1>
+<p>下载的压缩包可直接使用离线安装脚本。仓库发布后，也可以填写下面的 GitHub 地址，生成 Codex 官方安装链接。</p>
+<label>GitHub 仓库<input id="repo" placeholder="owner/repository 或 https://github.com/owner/repository" autocomplete="off"></label>
+<label>分支或版本<input id="ref" value="main"></label>
+<label>图片在仓库中的路径<input id="path" value="codex/pet/spritesheet.png"></label>
+<small>如果只上传 Codex 包，图片路径填写 pet/spritesheet.png。仓库需公开，图片才可直接下载。</small>
+<p class="message" id="error" role="status"></p>
+<a class="button" id="install" aria-disabled="true">在 Codex 中安装</a> <button id="copy" type="button">复制链接</button>
+<textarea id="link" readonly aria-label="生成的安装链接"></textarea>
+<footer>原始 v2 动画素材 · 安装后在宠物设置中选择奶邮。<br>
+<a href="https://learn.chatgpt.com/docs/app/commands#pets" target="_blank" rel="noopener">官方安装链接说明</a></footer>
+</main><script type="module">
+const repo=document.querySelector('#repo'),ref=document.querySelector('#ref'),path=document.querySelector('#path'),link=document.querySelector('#link'),install=document.querySelector('#install'),error=document.querySelector('#error');
+function update(){
+  install.removeAttribute('href');install.setAttribute('aria-disabled','true');link.value='';error.textContent='';
+  if(!repo.value.trim())return;
+  try{
+    let slug=repo.value.trim();
+    if(slug.startsWith('https://')){const u=new URL(slug);if(u.hostname!=='github.com')throw Error('请填写 GitHub 仓库地址。');slug=u.pathname.replace(/^\/+|\/+$/g,'').replace(/\.git$/,'');}
+    if(!/^[\w.-]+\/[\w.-]+$/.test(slug))throw Error('仓库格式应为 owner/repository。');
+    const version=ref.value.trim(),asset=path.value.trim();if(!version||!asset||asset.startsWith('/')||asset.split('/').includes('..'))throw Error('请检查分支和图片路径。');
+    const image='https://raw.githubusercontent.com/'+slug+'/'+encodeURIComponent(version)+'/'+asset.split('/').map(encodeURIComponent).join('/');
+    const uri=new URL('codex://pets/install');uri.searchParams.set('name','奶邮');uri.searchParams.set('description','蓝色电子小伙伴，陪你一起学习和写代码。');uri.searchParams.set('imageUrl',image);uri.searchParams.set('spriteVersionNumber','2');
+    link.value=uri.toString();install.href=link.value;install.setAttribute('aria-disabled','false');
+  }catch(e){error.textContent=e.message;}
+}
+for(const field of [repo,ref,path])field.addEventListener('input',update);
+document.querySelector('#copy').addEventListener('click',async()=>{if(!link.value){error.textContent='先填写仓库地址。';return;}try{await navigator.clipboard.writeText(link.value);error.textContent='已复制安装链接。';}catch{link.focus();link.select();error.textContent='请按 Ctrl+C 或 Command+C 复制。';}});
+const query=new URLSearchParams(location.search);if(query.has('repo'))repo.value=query.get('repo');if(query.has('ref'))ref.value=query.get('ref');update();
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){let frame=0;setInterval(()=>{document.querySelector('.pet').style.backgroundPosition=(-96*(frame++%6))+'px 0';},170);}
+</script></html>
+

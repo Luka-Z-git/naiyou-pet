@@ -1,0 +1,35 @@
+{
+  "name": "@local/dsh-naiyou-pet",
+  "version": "2.1.0",
+  "private": true,
+  "type": "module",
+  "description": "奶邮桌面伙伴：批准提醒、当前活动和会话 Token 用量",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js"
+  },
+  "files": [
+    "index.js",
+    "activity.js",
+    "desktop-pet.ps1",
+    "launch-harness.ps1",
+    "client.js",
+    "cordis.patch.yml",
+    "naiyou-spritesheet.png",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  }
+}
